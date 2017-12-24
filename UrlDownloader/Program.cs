@@ -44,8 +44,8 @@ namespace UrlDownloader
         {
 			Console.WriteLine("Phase 1: Reading website structure");
 			var serverDirStructure = ReadDirectory(null, root);
-			Console.WriteLine("Phase 2: saving list");
-			WriteDownloadList(serverDirStructure);
+			//Console.WriteLine("Phase 2: saving list");
+			//WriteDownloadList(serverDirStructure);
 			Console.WriteLine("Phase 3: downloading");
 			Download(serverDirStructure);
         }
