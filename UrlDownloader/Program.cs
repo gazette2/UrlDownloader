@@ -78,8 +78,9 @@ namespace UrlDownloader
 				if (item is DirectoryInfo di)
 				{
 					var currentDir = Directory.GetCurrentDirectory();
-					currentDir += ('/' + di.Name);
-					Directory.CreateDirectory(di.Name);
+					var decodedName = WebUtility.UrlDecode(di.Name);
+					currentDir += ('/' + decodedName);
+					Directory.CreateDirectory(decodedName);
 					Directory.SetCurrentDirectory(currentDir);
 
 					DownloadFolder(di, webClient);
