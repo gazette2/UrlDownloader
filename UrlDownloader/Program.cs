@@ -21,7 +21,7 @@ namespace UrlDownloader
 
 	class DirectoryInfo : FileInfo
 	{
-		public DirectoryInfo Parent { get; set; }
+		// public DirectoryInfo Parent { get; set; }
 
 		List<FileInfo> fileList = new List<FileInfo>();
 		public FileInfo AddFile(FileInfo file)
@@ -38,14 +38,14 @@ namespace UrlDownloader
 
     class Program
     {
-		static DirectoryInfo root = new DirectoryInfo("https://doc.lagout.org/");
-		
         static void Main(string[] args)
         {
+			DirectoryInfo root = new DirectoryInfo("https://doc.lagout.org/");
+
 			Console.WriteLine("Phase 1: Reading website structure");
 			var serverDirStructure = ReadDirectory(null, root);
-			//Console.WriteLine("Phase 2: saving list");
-			//WriteDownloadList(serverDirStructure);
+			Console.WriteLine("Phase 2: saving list");
+			WriteDownloadList(serverDirStructure);
 			Console.WriteLine("Phase 3: downloading");
 			Download(serverDirStructure);
         }
@@ -115,7 +115,7 @@ namespace UrlDownloader
 			if (name != null)
 			{
 				url += name;
-				di = new DirectoryInfo(url) { Parent = parent, Name = name };
+				di = new DirectoryInfo(url) { /*Parent = parent, */ Name = name };
 			}
 			else
 				di = parent;
