@@ -40,19 +40,38 @@ namespace UrlDownloader
     {
         static void Main(string[] args)
         {
-			DirectoryInfo root = new DirectoryInfo("https://doc.lagout.org/");
+			string rootPath = "https://doc.lagout.org/";
+			if (args.Length != 0)
+				rootPath += args[0];
+			DirectoryInfo root = new DirectoryInfo(rootPath);
 
-			Console.WriteLine("Phase 1: Reading website structure");
-			var serverDirStructure = ReadDirectory(null, root);
-			Console.WriteLine("Phase 2: saving list");
-			WriteDownloadList(serverDirStructure);
+			DirectoryInfo serverDirStructure;
+			if (File.Exists("list.json"))
+			{
+				Console.WriteLine("List file is exist: skipping phase 1 & 2");
+				using (var fileStream = new FileStream("list.json", FileMode.Open))
+				using (var streamReader = new StreamReader(fileStream))
+				{
+					string json = streamReader.ReadToEnd();
+					serverDirStructure = JsonConvert.DeserializeObject<DirectoryInfo>(json, 
+						new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+				}
+			}
+			else
+			{
+				Console.WriteLine("Phase 1: Reading website structure");
+				serverDirStructure = ReadDirectory(null, root);
+				Console.WriteLine("Phase 2: saving list");
+				WriteDownloadList(serverDirStructure);
+			}
 			Console.WriteLine("Phase 3: downloading");
 			Download(serverDirStructure);
         }
 
 		static void WriteDownloadList(DirectoryInfo subFolder)
 		{
-			var json = JsonConvert.SerializeObject(subFolder);
+			var json = JsonConvert.SerializeObject(subFolder, 
+				new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
 			using (var fileStream = new FileStream("list.json", FileMode.CreateNew))
 			using (StreamWriter streamWriter = new StreamWriter(fileStream))
 			{
@@ -80,7 +99,8 @@ namespace UrlDownloader
 					var currentDir = Directory.GetCurrentDirectory();
 					var decodedName = WebUtility.UrlDecode(di.Name);
 					currentDir += ('/' + decodedName);
-					Directory.CreateDirectory(decodedName);
+					if(!Directory.Exists(decodedName))
+						Directory.CreateDirectory(decodedName);
 					Directory.SetCurrentDirectory(currentDir);
 
 					DownloadFolder(di, webClient);
@@ -97,6 +117,8 @@ namespace UrlDownloader
 
 					try
 					{
+						if (File.Exists(fileName))
+							continue;
 						webClient.DownloadFile(fi.FullPath, fileName);
 						Console.WriteLine($"{fileName}");
 					}
@@ -133,10 +155,12 @@ namespace UrlDownloader
 					if (item.StartsWith(".."))
 						continue;
 					di.AddFile(ReadDirectory(item, di));
+					Console.WriteLine($"Directory: {item} added");
 				}
 				else
 				{
 					di.AddFile(new FileInfo(url + item));
+					Console.WriteLine($"File: {item} added");
 				}
 			}
 
