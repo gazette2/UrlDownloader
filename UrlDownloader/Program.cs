@@ -9,20 +9,23 @@ using Newtonsoft.Json;
 
 namespace UrlDownloader
 {
+	internal static class Options
+	{
+		internal static bool Reverse = true;
+	}
+
 	class FileInfo
 	{
 		public string FullPath { get; set; }
 		public string Name { get; set; }
-		public FileInfo(string name)
+		public FileInfo(string path)
 		{
-			FullPath = name;
+			FullPath = path;
 		}
 	}
 
 	class DirectoryInfo : FileInfo
 	{
-		// public DirectoryInfo Parent { get; set; }
-
 		List<FileInfo> fileList = new List<FileInfo>();
 		public FileInfo AddFile(FileInfo file)
 		{
@@ -43,6 +46,8 @@ namespace UrlDownloader
 			string rootPath = "https://doc.lagout.org/";
 			if (args.Length != 0)
 				rootPath += args[0];
+			if (args.Length >= 2)
+				Options.Reverse = bool.Parse(args[1]);
 			DirectoryInfo root = new DirectoryInfo(rootPath);
 
 			DirectoryInfo serverDirStructure;
@@ -81,7 +86,7 @@ namespace UrlDownloader
 
 		static void Download(DirectoryInfo subFolder)
 		{
-			Console.Write("Root");
+			Console.Write("Root: ");
 			Console.WriteLine(Directory.GetCurrentDirectory());
 			using (var webClient = new WebClient())
 			{
@@ -91,7 +96,8 @@ namespace UrlDownloader
 
 		private static void DownloadFolder(DirectoryInfo subFolder, WebClient webClient)
 		{
-			var list = subFolder.Entries.Reverse<FileInfo>();
+			var list = Options.Reverse ?
+				subFolder.Entries.Reverse<FileInfo>() : subFolder.Entries;
 			foreach (var item in list)
 			{
 				if (item is DirectoryInfo di)
@@ -137,7 +143,7 @@ namespace UrlDownloader
 			if (name != null)
 			{
 				url += name;
-				di = new DirectoryInfo(url) { /*Parent = parent, */ Name = name };
+				di = new DirectoryInfo(url) { Name = name };
 			}
 			else
 				di = parent;
