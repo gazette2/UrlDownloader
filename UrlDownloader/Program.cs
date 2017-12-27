@@ -88,7 +88,7 @@ namespace UrlDownloader
 		{
 			Console.Write("Root: ");
 			Console.WriteLine(Directory.GetCurrentDirectory());
-			using (var webClient = new WebClient())
+			using (var webClient = new WebClient { Proxy = null })
 			{
 				DownloadFolder(subFolder, webClient);
 			}
